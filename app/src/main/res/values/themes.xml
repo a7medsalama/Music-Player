@@ -6,4 +6,28 @@
     </style>
 
     <style name="Theme.MusicPlayer" parent="Base.Theme.MusicPlayer" />
+
+    <style name="RegularStyle">
+
+        <item name="android:fontFamily">@font/inter_regular</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">15sp</item>
+
+    </style>
+
+    <style name="BoldStyle">
+
+        <item name="android:fontFamily">@font/inter_bold</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">15sp</item>
+
+    </style>
+
+    <style name="SemiBoldStyle">
+
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">15sp</item>
+
+    </style>
 </resources>

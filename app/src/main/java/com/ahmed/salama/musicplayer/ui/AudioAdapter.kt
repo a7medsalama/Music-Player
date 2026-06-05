@@ -1,82 +1,111 @@
 package com.ahmed.salama.musicplayer.ui
 
-import android.content.Context
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import com.ahmed.salama.musicplayer.R
 import com.ahmed.salama.musicplayer.model.AudioItem
+import com.bumptech.glide.Glide
 import java.util.Locale
 
-class AudioAdapter(context: Context) : BaseAdapter() {
-    private val inflater: LayoutInflater = LayoutInflater.from(context)
+class AudioAdapter(
+    private val onItemClick: (item: AudioItem, position: Int) -> Unit
+) : RecyclerView.Adapter<AudioAdapter.AudioViewHolder>() {
+
     private val items = mutableListOf<AudioItem>()
-    // Keep track of the currently selected item index. The default is -1 meaning nothing is selected.
-    private var selectedPosition: Int = -1
+    private var selectedPosition: Int = RecyclerView.NO_POSITION
 
     fun submitList(newItems: List<AudioItem>?) {
         items.clear()
         if (newItems != null) {
             items.addAll(newItems)
         }
+        selectedPosition = RecyclerView.NO_POSITION
         notifyDataSetChanged()
     }
 
-    fun getItemsCopy(): ArrayList<AudioItem> = ArrayList(items)
+    fun getItemsCopy(): ArrayList<AudioItem> {
+        return ArrayList(items)
+    }
 
-    /**
-     * Update the adapter to mark a given position as selected. This will trigger
-     * a view refresh causing the selected row to use a different background. Passing
-     * -1 will clear the selection.
-     */
+    fun getItem(position: Int): AudioItem {
+        return items[position]
+    }
+
     fun setSelectedPosition(position: Int) {
+        val oldPosition = selectedPosition
         selectedPosition = position
-        notifyDataSetChanged()
-    }
 
-    override fun getCount(): Int = items.size
-
-    override fun getItem(position: Int): AudioItem = items[position]
-
-    override fun getItemId(position: Int): Long = items[position].id
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val holder: ViewHolder
-        val view: View
-
-        if (convertView == null) {
-            view = inflater.inflate(R.layout.item_audio, parent, false)
-            holder = ViewHolder(view)
-            view.tag = holder
-        } else {
-            view = convertView
-            holder = view.tag as ViewHolder
+        if (oldPosition != RecyclerView.NO_POSITION) {
+            notifyItemChanged(oldPosition)
         }
 
-        val item = getItem(position)
-        holder.title.text = item.title
-        holder.subtitle.text = "${item.artist} • ${item.album}"
-        holder.duration.text = formatDuration(item.durationMs)
-
-        // Highlight the selected item using a distinct background color; otherwise use the default background.
-        val ctx = inflater.context
-        val selectedColor = ctx.getColor(R.color.selectedItemBackground)
-        val defaultColor = ctx.getColor(R.color.white)
-        if (position == selectedPosition) {
-            view.setBackgroundColor(selectedColor)
-        } else {
-            view.setBackgroundColor(defaultColor)
+        if (selectedPosition != RecyclerView.NO_POSITION) {
+            notifyItemChanged(selectedPosition)
         }
-
-        return view
     }
 
-    private class ViewHolder(view: View) {
-        val title: TextView = view.findViewById(R.id.textTitle)
-        val subtitle: TextView = view.findViewById(R.id.textSubtitle)
-        val duration: TextView = view.findViewById(R.id.textDuration)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AudioViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_audio, parent, false)
+
+        return AudioViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: AudioViewHolder, position: Int) {
+        val item = items[position]
+        val isSelected = position == selectedPosition
+        holder.bind(item, isSelected)
+
+        holder.itemView.setOnClickListener {
+            val currentPosition = holder.bindingAdapterPosition
+            if (currentPosition == RecyclerView.NO_POSITION) return@setOnClickListener
+
+            setSelectedPosition(currentPosition)
+            onItemClick(items[currentPosition], currentPosition)
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return items.size
+    }
+
+    class AudioViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val imageArtwork: ImageView = itemView.findViewById(R.id.imageArtwork)
+        private val title: TextView = itemView.findViewById(R.id.textTitle)
+        private val subtitle: TextView = itemView.findViewById(R.id.textSubtitle)
+        private val duration: TextView = itemView.findViewById(R.id.textDuration)
+
+        fun bind(item: AudioItem, isSelected: Boolean) {
+            title.text = item.displayTitle
+            subtitle.text = "${item.displayArtist} • ${item.displayAlbum}"
+            duration.text = formatDuration(item.durationMs)
+
+            val backgroundColor = if (isSelected) {
+                ContextCompat.getColor(itemView.context, R.color.purple)
+            } else {
+                ContextCompat.getColor(itemView.context, R.color.gray)
+            }
+
+            itemView.setBackgroundColor(backgroundColor)
+
+            val artworkModel = item.uriString
+                ?.takeIf { it.isNotBlank() }
+                ?.let { Uri.parse(it) }
+                ?: Uri.parse(item.uriString)
+
+            Glide.with(imageArtwork)
+                .load(artworkModel)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_background)
+                .centerCrop()
+                .into(imageArtwork)
+        }
     }
 
     companion object {
@@ -88,4 +117,3 @@ class AudioAdapter(context: Context) : BaseAdapter() {
         }
     }
 }
-

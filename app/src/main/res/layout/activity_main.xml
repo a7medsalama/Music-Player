@@ -2,30 +2,30 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:background="#FAFAFA">
+    android:background="@drawable/bg">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp"
-        android:background="@color/black">
+        android:padding="20dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Salama Music Player"
-            android:textColor="@android:color/white"
-            android:textStyle="bold"
+            style="@style/BoldStyle"
+            android:layout_gravity="center"
+            android:text="@string/explore_music"
             android:textSize="24sp" />
 
         <TextView
             android:id="@+id/textSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Loading your audio library..."
-            android:textColor="#E3F2FD"
+            style="@style/RegularStyle"
+            tools:text="Loading your audio library..."
             android:textSize="14sp"
             android:layout_marginTop="4dp" />
     </LinearLayout>
@@ -34,7 +34,7 @@
         android:id="@+id/buttonGrantPermission"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Grant audio permission"
+        android:text="@string/grant_audio_permission"
         android:visibility="gone"
         android:layout_margin="12dp" />
 
@@ -43,25 +43,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:indeterminateTint="@color/purple"
         android:layout_marginTop="16dp" />
 
     <TextView
         android:id="@+id/textEmpty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No audio found. Make sure there are music files on your device and permission is granted."
+        style="@style/RegularStyle"
+        android:text="@string/no_audio_found_make_sure_there_are_music_files_on_your_device_and_permission_is_granted"
         android:textAlignment="center"
         android:textColor="#555555"
         android:padding="24dp"
         android:visibility="gone" />
 
-    <ListView
-        android:id="@+id/listAudio"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvAudio"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:divider="#EEEEEE"
-        android:dividerHeight="1dp" />
+        tools:listitem="@layout/item_audio"
+        tools:itemCount="3"/>
 
     <LinearLayout
         android:id="@+id/playerPanel"

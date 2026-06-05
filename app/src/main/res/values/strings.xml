@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MusicPlayer</string>
+    <string name="no_audio_found_make_sure_there_are_music_files_on_your_device_and_permission_is_granted">No audio found. Make sure there are music files on your device and permission is granted.</string>
+    <string name="grant_audio_permission">Grant audio permission</string>
+    <string name="explore_music">Explore Music</string>
+    <string name="img">img</string>
 </resources>

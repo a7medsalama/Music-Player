@@ -52,4 +52,10 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
+
+    implementation("com.google.android.exoplayer:exoplayer:2.19.0")
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+    implementation("androidx.palette:palette:1.0.0")
+    implementation("jp.wasabeef:glide-transformations:4.3.0")
 }

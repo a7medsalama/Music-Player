@@ -15,6 +15,8 @@ import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.ahmed.salama.musicplayer.data.AudioRepository
 import com.ahmed.salama.musicplayer.data.AudioLibraryCache
 import com.ahmed.salama.musicplayer.model.AudioItem
@@ -54,7 +56,6 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize views
         textSubtitle = findViewById(R.id.textSubtitle)
         textEmpty = findViewById(R.id.textEmpty)
         textNowPlaying = findViewById(R.id.textNowPlaying)
@@ -65,21 +66,19 @@ class MainActivity : Activity() {
         val buttonPrevious = findViewById<Button>(R.id.buttonPrevious)
         val buttonNext = findViewById<Button>(R.id.buttonNext)
         val buttonStop = findViewById<Button>(R.id.buttonStop)
-        val listAudio = findViewById<ListView>(R.id.listAudio)
 
-        // Setup adapter
-        adapter = AudioAdapter(this)
-        listAudio.adapter = adapter
 
         // Setup button listeners
         buttonGrantPermission.setOnClickListener { requestNeededPermissions() }
 
-        listAudio.setOnItemClickListener { _, _, position, _ ->
-            // Highlight the selected row in the list
-            adapter.setSelectedPosition(position)
-            // Show playback options via a bottom sheet
+        val listAudio = findViewById<RecyclerView>(R.id.rvAudio)
+
+        adapter = AudioAdapter { _, position ->
             showSongOptions(position)
         }
+
+        listAudio.layoutManager = LinearLayoutManager(this)
+        listAudio.adapter = adapter
 
         buttonToggle.setOnClickListener { sendPlaybackAction(MusicPlayerService.ACTION_TOGGLE) }
         buttonPrevious.setOnClickListener { sendPlaybackAction(MusicPlayerService.ACTION_PREVIOUS) }
