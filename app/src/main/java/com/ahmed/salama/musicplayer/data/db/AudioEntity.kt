@@ -18,7 +18,8 @@ data class AudioEntity(
     val artist: String,
     val album: String,
     val durationMs: Long,
-    val uriString: String
+    val uriString: String,
+    val artworkUriString: String?
 ) {
     /**
      * Convert this persisted entity back into an in-memory [AudioItem].
@@ -29,7 +30,8 @@ data class AudioEntity(
         artist = artist,
         album = album,
         durationMs = durationMs,
-        uriString = uriString
+        uriString = uriString,
+        artworkUriString = artworkUriString
     )
 
     companion object {
@@ -43,7 +45,8 @@ data class AudioEntity(
             artist = item.artist,
             album = item.album,
             durationMs = item.durationMs,
-            uriString = item.uriString
+            uriString = item.uriString,
+            artworkUriString = item.artworkUriString
         )
     }
 }

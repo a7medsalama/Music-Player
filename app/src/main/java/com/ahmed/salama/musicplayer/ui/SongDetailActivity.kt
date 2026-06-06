@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.ahmed.salama.musicplayer.PlaybackViewModelHolder
+import com.ahmed.salama.musicplayer.R
 import com.ahmed.salama.musicplayer.data.AudioLibraryCache
 import com.ahmed.salama.musicplayer.databinding.ActivitySongDetailBinding
 import com.ahmed.salama.musicplayer.model.AudioItem
@@ -19,6 +21,7 @@ import com.ahmed.salama.musicplayer.playback.MusicPlayerService
 class SongDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySongDetailBinding
+    private val viewModel = PlaybackViewModelHolder.viewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +43,19 @@ class SongDetailActivity : AppCompatActivity() {
         val durationFormatted = AudioAdapter.formatDuration(item.durationMs)
         binding.tvDuration.text = durationFormatted
 
+        binding.ivFav.setOnClickListener {
+            if (viewModel.isFavourite.value == true) {
+                binding.ivFav.setImageResource(R.drawable.ic_non_fav)
+                viewModel.isFavourite.value = false
+            } else {
+                binding.ivFav.setImageResource(R.drawable.ic_fav)
+                viewModel.isFavourite.value = true
+            }
+        }
+
+        binding.ivBack.setOnClickListener {
+            finish()
+        }
 
         binding.btnPlay.setOnClickListener {
             // Set a playlist containing only this item

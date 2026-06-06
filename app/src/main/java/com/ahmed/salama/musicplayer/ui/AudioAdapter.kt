@@ -93,21 +93,13 @@ class AudioAdapter(
             }
             itemView.setBackgroundResource(background)
 
-            // Prefer the bitmap on API 29+, fallback to URI on earlier versions
-            val bitmap = item.artworkBitmap
-            if (bitmap != null) {
-                imageArtwork.setImageBitmap(bitmap)
-            } else {
-                val artworkModel = item.artworkUriString
-                    ?.takeIf { it.isNotBlank() }
-                    ?.let { Uri.parse(it) }
-                Glide.with(imageArtwork)
-                    .load(artworkModel)
-                    .placeholder(R.drawable.ic_music)
-                    .error(R.drawable.ic_music)
-                    .centerCrop()
-                    .into(imageArtwork)
-            }
+            Glide.with(itemView.context.applicationContext)
+                .load(item.artworkUriString?.let { Uri.parse(it) })
+                .placeholder(R.drawable.ic_music)
+                .error(R.drawable.ic_music)
+                .centerCrop()
+                .into(imageArtwork)
+
         }
     }
 

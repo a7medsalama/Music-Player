@@ -19,6 +19,8 @@ class PlaybackViewModel : ViewModel() {
     private val _nowPlayingArtist = MutableLiveData("")
     val nowPlayingArtist: LiveData<String> = _nowPlayingArtist
 
+    val isFavourite = MutableLiveData(false)
+
     fun updatePlaybackState(title: String?, artist: String?, state: String?) {
         _isPlaying.value = state == "Playing"
         _nowPlayingTitle.value = title?.takeIf { it.isNotBlank() } ?: "Nothing playing"

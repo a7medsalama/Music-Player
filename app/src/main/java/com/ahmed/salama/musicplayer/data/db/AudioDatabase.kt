@@ -11,7 +11,7 @@ import androidx.room.RoomDatabase
  * [getInstance] to obtain a reference and call [audioDao] to access
  * the DAO methods.
  */
-@Database(entities = [AudioEntity::class], version = 1, exportSchema = false)
+@Database(entities = [AudioEntity::class], version = 2, exportSchema = false)
 abstract class AudioDatabase : RoomDatabase() {
     abstract fun audioDao(): AudioDao
 
@@ -25,11 +25,9 @@ abstract class AudioDatabase : RoomDatabase() {
          */
         fun getInstance(context: Context): AudioDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AudioDatabase::class.java,
-                    "audio_database"
-                ).build()
+                val instance = Room.databaseBuilder(context.applicationContext, AudioDatabase::class.java, "audio_database")
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

@@ -66,20 +66,14 @@ class AudioRepository {
                 // Skip zero-length tracks
                 if (duration <= 0) continue
 
-                var artworkBitmap: Bitmap? = null
                 var artworkUriString: String? = null
 
                 if (albumId > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        // API 29+ thumbnail solution
-                        artworkBitmap = getAlbumArtwork(resolver, albumId)
-                    } else {
-                        // Pre‑29 fallback: use the classic album art URI
-                        artworkUriString = ContentUris.withAppendedId(
-                            Uri.parse("content://media/external/audio/albumart"),
-                            albumId
-                        ).toString()
-                    }
+                    // ✅ On ALL API levels, produce a URI string — let Glide handle loading
+                    artworkUriString = ContentUris.withAppendedId(
+                        Uri.parse("content://media/external/audio/albumart"),
+                        albumId
+                    ).toString()
                 }
 
                 val contentUri = ContentUris.withAppendedId(collection, id)
@@ -92,7 +86,6 @@ class AudioRepository {
                         durationMs = duration,
                         uriString = contentUri.toString(),
                         artworkUriString = artworkUriString,
-                        artworkBitmap = artworkBitmap,
                         isFavorite = false
                     )
                 )
