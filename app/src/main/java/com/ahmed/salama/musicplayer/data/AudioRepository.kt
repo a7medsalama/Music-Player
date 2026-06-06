@@ -1,8 +1,15 @@
 package com.ahmed.salama.musicplayer.data
 
+import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
+import android.util.Size
+import androidx.annotation.RequiresApi
+import com.ahmed.salama.musicplayer.data.db.AudioDatabase
 import com.ahmed.salama.musicplayer.model.AudioItem
 
 class AudioRepository {
@@ -14,7 +21,7 @@ class AudioRepository {
      * ensure this method runs off of the main thread.
      */
     fun loadAudio(context: Context): List<AudioItem> {
-        val database = com.ahmed.salama.musicplayer.data.db.AudioDatabase.getInstance(context)
+        val database = AudioDatabase.getInstance(context)
         val dao = database.audioDao()
 
         // Check cached audio items first
@@ -33,7 +40,8 @@ class AudioRepository {
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ALBUM,
-            MediaStore.Audio.Media.DURATION
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.ALBUM_ID
         )
 
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
@@ -45,6 +53,7 @@ class AudioRepository {
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
             val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
@@ -52,9 +61,26 @@ class AudioRepository {
                 val artist = cursor.getString(artistColumn)
                 val album = cursor.getString(albumColumn)
                 val duration = cursor.getLong(durationColumn)
+                val albumId = cursor.getLong(albumIdColumn)
 
                 // Skip zero-length tracks
                 if (duration <= 0) continue
+
+                var artworkBitmap: Bitmap? = null
+                var artworkUriString: String? = null
+
+                if (albumId > 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        // API 29+ thumbnail solution
+                        artworkBitmap = getAlbumArtwork(resolver, albumId)
+                    } else {
+                        // Pre‑29 fallback: use the classic album art URI
+                        artworkUriString = ContentUris.withAppendedId(
+                            Uri.parse("content://media/external/audio/albumart"),
+                            albumId
+                        ).toString()
+                    }
+                }
 
                 val contentUri = ContentUris.withAppendedId(collection, id)
                 audioItems.add(
@@ -64,7 +90,10 @@ class AudioRepository {
                         artist = artist,
                         album = album,
                         durationMs = duration,
-                        uriString = contentUri.toString()
+                        uriString = contentUri.toString(),
+                        artworkUriString = artworkUriString,
+                        artworkBitmap = artworkBitmap,
+                        isFavorite = false
                     )
                 )
             }
@@ -73,11 +102,25 @@ class AudioRepository {
         // Persist the scanned results to the cache. Clear any stale entries first.
         if (audioItems.isNotEmpty()) {
             dao.clear()
-            val entities = audioItems.map { com.ahmed.salama.musicplayer.data.db.AudioEntity.fromAudioItem(it) }
+            val entities = audioItems.map {
+                com.ahmed.salama.musicplayer.data.db.AudioEntity.fromAudioItem(it)
+            }
             dao.insertAll(entities)
         }
 
         return audioItems
     }
-}
 
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun getAlbumArtwork(resolver: ContentResolver, albumId: Long): Bitmap? {
+        val contentUri = ContentUris.withAppendedId(
+            MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+            albumId
+        )
+        return try {
+            resolver.loadThumbnail(contentUri, Size(640, 480), null)
+        } catch (e: Exception) {
+            null
+        }
+    }
+}

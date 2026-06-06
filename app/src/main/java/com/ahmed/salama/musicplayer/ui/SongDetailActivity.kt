@@ -1,16 +1,13 @@
 package com.ahmed.salama.musicplayer.ui
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
-import com.ahmed.salama.musicplayer.R
+import androidx.appcompat.app.AppCompatActivity
 import com.ahmed.salama.musicplayer.data.AudioLibraryCache
+import com.ahmed.salama.musicplayer.databinding.ActivitySongDetailBinding
 import com.ahmed.salama.musicplayer.model.AudioItem
 import com.ahmed.salama.musicplayer.playback.MusicPlayerService
-import com.ahmed.salama.musicplayer.ui.AudioAdapter
 
 /**
  * Displays details for a single audio item. The activity expects an
@@ -19,11 +16,14 @@ import com.ahmed.salama.musicplayer.ui.AudioAdapter
  * exposes a simple play button that will play the selected song in
  * isolation.
  */
-class SongDetailActivity : Activity() {
+class SongDetailActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivitySongDetailBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_song_detail)
+        binding = ActivitySongDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val item: AudioItem? = intent.getParcelableExtra("audioItem")
         if (item == null) {
@@ -33,16 +33,15 @@ class SongDetailActivity : Activity() {
         }
 
         // Populate the UI fields
-        findViewById<TextView>(R.id.textSongTitle).text = item.displayTitle
-        findViewById<TextView>(R.id.textSongArtist).text = item.displayArtist
-        findViewById<TextView>(R.id.textSongAlbum).text = item.displayAlbum
+        binding.tvTitle.text = item.displayTitle
+        binding.tvArtist.text = item.displayArtist
+        binding.tvAlbum.text = item.displayAlbum
         // Format duration using the same helper as AudioAdapter
         val durationFormatted = AudioAdapter.formatDuration(item.durationMs)
-        findViewById<TextView>(R.id.textSongDuration).text = durationFormatted
+        binding.tvDuration.text = durationFormatted
 
-        // Setup play button to play this single item
-        val playButton = findViewById<Button>(R.id.buttonPlaySong)
-        playButton.setOnClickListener {
+
+        binding.btnPlay.setOnClickListener {
             // Set a playlist containing only this item
             AudioLibraryCache.setPlaylist(listOf(item))
             // Start playback at index 0

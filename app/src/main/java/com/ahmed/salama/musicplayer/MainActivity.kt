@@ -1,7 +1,6 @@
 package com.ahmed.salama.musicplayer
 
 import android.Manifest
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -10,66 +9,68 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.ListView
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ahmed.salama.musicplayer.data.AudioRepository
 import com.ahmed.salama.musicplayer.data.AudioLibraryCache
+import com.ahmed.salama.musicplayer.databinding.ActivityMainBinding
 import com.ahmed.salama.musicplayer.model.AudioItem
 import com.ahmed.salama.musicplayer.playback.MusicPlayerService
 import com.ahmed.salama.musicplayer.ui.AudioAdapter
 import com.ahmed.salama.musicplayer.ui.SongDetailActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMainBinding
+//    private val viewModel = MainViewModel()
+
+    private val viewModel = PlaybackViewModelHolder.viewModel
     private lateinit var adapter: AudioAdapter
-    private lateinit var textSubtitle: TextView
-    private lateinit var textEmpty: TextView
-    private lateinit var textNowPlaying: TextView
-    private lateinit var textPlaybackState: TextView
-    private lateinit var progressLoading: ProgressBar
-    private lateinit var buttonGrantPermission: Button
-    private lateinit var buttonToggle: Button
 
     private val playbackReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action != MusicPlayerService.BROADCAST_PLAYBACK_STATE) return
-
             val title = intent.getStringExtra(MusicPlayerService.EXTRA_TITLE)
             val artist = intent.getStringExtra(MusicPlayerService.EXTRA_ARTIST)
             val state = intent.getStringExtra(MusicPlayerService.EXTRA_STATE)
+            val index = intent.getIntExtra(MusicPlayerService.EXTRA_INDEX, RecyclerView.NO_POSITION)
 
-            textNowPlaying.text = if (title.isNullOrBlank()) "Nothing playing" else title
-
-            val safeArtist = artist?.takeIf { it.isNotBlank() } ?: "Unknown artist"
-            val safeState = state ?: "Stopped"
-            textPlaybackState.text = "$safeState • $safeArtist"
+            viewModel.updatePlaybackState(title, artist, state)
+            if (index != RecyclerView.NO_POSITION) {
+                viewModel.updateCurrentIndex(index)
+            }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        textSubtitle = findViewById(R.id.textSubtitle)
-        textEmpty = findViewById(R.id.textEmpty)
-        textNowPlaying = findViewById(R.id.textNowPlaying)
-        textPlaybackState = findViewById(R.id.textPlaybackState)
-        progressLoading = findViewById(R.id.progressLoading)
-        buttonGrantPermission = findViewById(R.id.buttonGrantPermission)
-        buttonToggle = findViewById(R.id.buttonToggle)
-        val buttonPrevious = findViewById<Button>(R.id.buttonPrevious)
-        val buttonNext = findViewById<Button>(R.id.buttonNext)
-        val buttonStop = findViewById<Button>(R.id.buttonStop)
 
+        // viewModel observer :
+        viewModel.isPlaying.observe(this) { isPlaying ->
+            val imageResource = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play_3
+            binding.buttonToggle.setBackgroundResource(imageResource)
+        }
+
+        viewModel.nowPlayingTitle.observe(this) { title ->
+            binding.textNowPlaying.text = title
+        }
+
+        viewModel.currentIndex.observe(this) { index ->
+            if (index != RecyclerView.NO_POSITION) {
+                adapter.setSelectedPosition(index)
+                binding.rvAudio.scrollToPosition(index) // 👈 this solves issue #3
+            }
+        }
 
         // Setup button listeners
-        buttonGrantPermission.setOnClickListener { requestNeededPermissions() }
+        binding.buttonGrantPermission.setOnClickListener { requestNeededPermissions() }
 
         val listAudio = findViewById<RecyclerView>(R.id.rvAudio)
 
@@ -80,10 +81,10 @@ class MainActivity : Activity() {
         listAudio.layoutManager = LinearLayoutManager(this)
         listAudio.adapter = adapter
 
-        buttonToggle.setOnClickListener { sendPlaybackAction(MusicPlayerService.ACTION_TOGGLE) }
-        buttonPrevious.setOnClickListener { sendPlaybackAction(MusicPlayerService.ACTION_PREVIOUS) }
-        buttonNext.setOnClickListener { sendPlaybackAction(MusicPlayerService.ACTION_NEXT) }
-        buttonStop.setOnClickListener { sendStopAction() }
+        binding.buttonToggle.setOnClickListener { sendPlaybackAction(MusicPlayerService.ACTION_TOGGLE) }
+//        binding.buttonPrevious.setOnClickListener { sendPlaybackAction(MusicPlayerService.ACTION_PREVIOUS) }
+        binding.buttonNext.setOnClickListener { sendPlaybackAction(MusicPlayerService.ACTION_NEXT) }
+//        binding.buttonStop.setOnClickListener { sendStopAction() }
 
         // Load audio library
         if (hasNeededPermissions()) {
@@ -123,26 +124,26 @@ class MainActivity : Activity() {
     }
 
     private fun showPermissionState() {
-        progressLoading.visibility = View.GONE
-        textEmpty.visibility = View.VISIBLE
-        buttonGrantPermission.visibility = View.VISIBLE
-        textSubtitle.text = "Permission required to scan audio files"
+        binding.progressLoading.visibility = View.GONE
+        binding.textEmpty.visibility = View.VISIBLE
+        binding.buttonGrantPermission.visibility = View.VISIBLE
+        binding.textSubtitle.text = "Permission required to scan audio files"
     }
 
     private fun loadAudioLibrary() {
-        buttonGrantPermission.visibility = View.GONE
-        textEmpty.visibility = View.GONE
-        progressLoading.visibility = View.VISIBLE
-        textSubtitle.text = "Scanning audio files from MediaStore..."
+        binding.buttonGrantPermission.visibility = View.GONE
+        binding.textEmpty.visibility = View.GONE
+        binding.progressLoading.visibility = View.VISIBLE
+        binding.textSubtitle.text = "Scanning audio files from MediaStore..."
 
         Thread {
             val items = AudioRepository().loadAudio(applicationContext)
             runOnUiThread {
-                progressLoading.visibility = View.GONE
+                binding.progressLoading.visibility = View.GONE
                 adapter.submitList(items)
                 AudioLibraryCache.setPlaylist(items)
-                textSubtitle.text = "${items.size} audio file(s) found on this device"
-                textEmpty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+                binding.textSubtitle.text = "${items.size} audio file(s) found on this device"
+                binding.textEmpty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
             }
         }.start()
     }
@@ -161,6 +162,8 @@ class MainActivity : Activity() {
         val permissions = ArrayList<String>()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.READ_MEDIA_AUDIO)
+            // Add this line:
+            permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
@@ -188,12 +191,12 @@ class MainActivity : Activity() {
         startService(intent)
     }
 
-    private fun sendStopAction() {
-        val intent = Intent(this, MusicPlayerService::class.java).apply {
-            action = MusicPlayerService.ACTION_STOP
-        }
-        startService(intent)
-    }
+//    private fun sendStopAction() {
+//        val intent = Intent(this, MusicPlayerService::class.java).apply {
+//            action = MusicPlayerService.ACTION_STOP
+//        }
+//        startService(intent)
+//    }
 
     private fun startPlaybackService(intent: Intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

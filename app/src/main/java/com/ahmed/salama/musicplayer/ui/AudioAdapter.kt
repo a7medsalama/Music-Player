@@ -86,25 +86,28 @@ class AudioAdapter(
             subtitle.text = "${item.displayArtist} • ${item.displayAlbum}"
             duration.text = formatDuration(item.durationMs)
 
-            val backgroundColor = if (isSelected) {
-                ContextCompat.getColor(itemView.context, R.color.purple)
+            val background = if (isSelected) {
+                R.drawable.audio_item_blue_bg
             } else {
-                ContextCompat.getColor(itemView.context, R.color.gray)
+                R.drawable.audio_item_bg
             }
+            itemView.setBackgroundResource(background)
 
-            itemView.setBackgroundColor(backgroundColor)
-
-            val artworkModel = item.uriString
-                ?.takeIf { it.isNotBlank() }
-                ?.let { Uri.parse(it) }
-                ?: Uri.parse(item.uriString)
-
-            Glide.with(imageArtwork)
-                .load(artworkModel)
-                .placeholder(R.drawable.ic_launcher_background)
-                .error(R.drawable.ic_launcher_background)
-                .centerCrop()
-                .into(imageArtwork)
+            // Prefer the bitmap on API 29+, fallback to URI on earlier versions
+            val bitmap = item.artworkBitmap
+            if (bitmap != null) {
+                imageArtwork.setImageBitmap(bitmap)
+            } else {
+                val artworkModel = item.artworkUriString
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { Uri.parse(it) }
+                Glide.with(imageArtwork)
+                    .load(artworkModel)
+                    .placeholder(R.drawable.ic_music)
+                    .error(R.drawable.ic_music)
+                    .centerCrop()
+                    .into(imageArtwork)
+            }
         }
     }
 

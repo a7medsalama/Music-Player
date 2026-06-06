@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="black">#FF000000</color>
+    <color name="semiBlack">#E1171717</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gray">#FF888888</color>
     <color name="darkGray">#FF666666</color>
+    <color name="lightGray">#FFEEEEEE</color>
+    <color name="semiGray">#A8888888</color>
+    <color name="semiLightGray">#A8888888</color>
     <color name="blue">#3686D4</color>
     <color name="darkBlue">#104B85</color>
-    <color name="purple">#9C27B0</color>
-    <color name="darkPurple">#662D91</color>
+    <color name="darkerBlue">#133B6F</color>
+    <color name="purple">#8B209E</color>
+    <color name="darkPurple">#521D7E</color>
+    <color name="darkerPurple">#450F6E</color>
 
 
 

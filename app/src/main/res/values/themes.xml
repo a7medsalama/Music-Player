@@ -7,6 +7,10 @@
 
     <style name="Theme.MusicPlayer" parent="Base.Theme.MusicPlayer" />
 
+    <style name="Circle_ImageView" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerSize">50%</item>
+    </style>
+
     <style name="RegularStyle">
 
         <item name="android:fontFamily">@font/inter_regular</item>

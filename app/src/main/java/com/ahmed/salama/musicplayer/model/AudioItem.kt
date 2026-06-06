@@ -1,5 +1,6 @@
 package com.ahmed.salama.musicplayer.model
 
+import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
 
@@ -9,7 +10,10 @@ data class AudioItem(
     val artist: String,
     val album: String,
     val durationMs: Long,
-    val uriString: String
+    val uriString: String,
+    val artworkUriString: String? = null,      // used on API < 29
+    val artworkBitmap: Bitmap? = null,          // used on API >= 29
+    val isFavorite: Boolean = false
 ) : Parcelable {
 
     val displayTitle: String
@@ -21,13 +25,17 @@ data class AudioItem(
     val displayAlbum: String
         get() = safe(album, "Unknown album")
 
+
     constructor(parcel: Parcel) : this(
         parcel.readLong(),
         parcel.readString().orEmpty(),
         parcel.readString().orEmpty(),
         parcel.readString().orEmpty(),
         parcel.readLong(),
-        parcel.readString().orEmpty()
+        parcel.readString().orEmpty(),
+        parcel.readString(),
+        parcel.readParcelable(Bitmap::class.java.classLoader), // artworkBitmap
+        parcel.readByte() != 0.toByte()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -37,13 +45,15 @@ data class AudioItem(
         parcel.writeString(album)
         parcel.writeLong(durationMs)
         parcel.writeString(uriString)
+        parcel.writeString(artworkUriString)
+        parcel.writeParcelable(artworkBitmap, flags)
+        parcel.writeByte(if (isFavorite) 1 else 0)
     }
 
     override fun describeContents(): Int = 0
 
     private fun safe(value: String, fallback: String): String {
         if (value.isBlank()) return fallback
-
         return if (value.trim().equals("<unknown>", ignoreCase = true)) {
             fallback
         } else {
