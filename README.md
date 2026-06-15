@@ -5,11 +5,11 @@ A simple Android music player app built with Kotlin.
 # Screenshots
 
 <p align="center">
-  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182845.jpg" width="190"/>
-  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182846.jpg" width="190"/>
-  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182847.jpg" width="190"/>
-  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182848.jpg" width="190"/>
-  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182849.jpg" width="190"/>
+  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182845.jpg" width="150"/>
+  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182846.jpg" width="150"/>
+  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182847.jpg" width="150"/>
+  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182848.jpg" width="150"/>
+  <img src="https://github.com/a7medsalama/Music-Player/blob/86a66a809ed69f914e231c4e66e7684fffb62c06/Screenshot_20260615_182849.jpg" width="150"/>
 </p>
 
 ## Features
