@@ -20,6 +20,7 @@ import com.ahmed.salama.musicplayer.databinding.ActivityMainBinding
 import com.ahmed.salama.musicplayer.model.AudioItem
 import com.ahmed.salama.musicplayer.playback.MusicPlayerService
 import com.ahmed.salama.musicplayer.ui.AudioAdapter
+import com.ahmed.salama.musicplayer.ui.FavouriteActivity
 import com.ahmed.salama.musicplayer.ui.SongDetailActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -31,15 +32,31 @@ class MainActivity : AppCompatActivity() {
     private val viewModel = PlaybackViewModelHolder.viewModel
     private lateinit var adapter: AudioAdapter
 
+    private var currentPlayingAudioId: Long = -1L
+    private var isServicePlaying: Boolean = false
+    private var lastSelectedIndex = RecyclerView.NO_POSITION
+
     private val playbackReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action != MusicPlayerService.BROADCAST_PLAYBACK_STATE) return
+
             val title = intent.getStringExtra(MusicPlayerService.EXTRA_TITLE)
             val artist = intent.getStringExtra(MusicPlayerService.EXTRA_ARTIST)
             val state = intent.getStringExtra(MusicPlayerService.EXTRA_STATE)
-            val index = intent.getIntExtra(MusicPlayerService.EXTRA_INDEX, RecyclerView.NO_POSITION)
+            val index = intent.getIntExtra(
+                MusicPlayerService.EXTRA_INDEX,
+                RecyclerView.NO_POSITION
+            )
+            val audioId = intent.getLongExtra(
+                MusicPlayerService.EXTRA_AUDIO_ID,
+                -1L
+            )
+
+            currentPlayingAudioId = audioId
+            isServicePlaying = state == "Playing"
 
             viewModel.updatePlaybackState(title, artist, state)
+
             if (index != RecyclerView.NO_POSITION) {
                 viewModel.updateCurrentIndex(index)
             }
@@ -51,6 +68,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.ivFav.setOnClickListener {
+            val favIntent = Intent(this, FavouriteActivity::class.java)
+            startActivity(favIntent)
+        }
 
         // viewModel observer :
         viewModel.isPlaying.observe(this) { isPlaying ->
@@ -63,9 +84,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.currentIndex.observe(this) { index ->
-            if (index != RecyclerView.NO_POSITION) {
+            if (index == RecyclerView.NO_POSITION) return@observe
+
+            if (index != lastSelectedIndex) {
                 adapter.setSelectedPosition(index)
-                binding.rvAudio.scrollToPosition(index) // 👈 this solves issue #3
+                lastSelectedIndex = index
+
+                // Optional: scroll only when song actually changed
+                // Remove this line completely if you never want auto-scroll.
+                binding.rvAudio.smoothScrollToPosition(index)
             }
         }
 
@@ -217,34 +244,29 @@ class MainActivity : AppCompatActivity() {
      * are selected a new [SongDetailActivity] is launched.
      */
     private fun showSongOptions(position: Int) {
-        val dialog = BottomSheetDialog(this)
-        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_playback_options, null)
-        val optionPlay = sheetView.findViewById<TextView>(R.id.optionPlay)
-        val optionDetails = sheetView.findViewById<TextView>(R.id.optionDetails)
+        val item = adapter.getItem(position)
 
-        // Play selected song when Play option is clicked
-        optionPlay.setOnClickListener {
-            dialog.dismiss()
-            // Set the entire playlist and start playing from the selected position
+        val sameSongAlreadyPlaying =
+            currentPlayingAudioId == item.id && isServicePlaying
+
+        if (!sameSongAlreadyPlaying) {
             AudioLibraryCache.setPlaylist(adapter.getItemsCopy())
+
             val intent = Intent(this, MusicPlayerService::class.java).apply {
                 action = MusicPlayerService.ACTION_PLAY_INDEX
                 putExtra(MusicPlayerService.EXTRA_INDEX, position)
             }
+
             startPlaybackService(intent)
+
+            currentPlayingAudioId = item.id
+            isServicePlaying = true
         }
 
-        // Open details screen when Details option is clicked
-        optionDetails.setOnClickListener {
-            dialog.dismiss()
-            val item = adapter.getItem(position)
-            val detailIntent = Intent(this, SongDetailActivity::class.java).apply {
-                putExtra("audioItem", item)
-            }
-            startActivity(detailIntent)
+        val detailIntent = Intent(this, SongDetailActivity::class.java).apply {
+            putExtra("audioItem", item)
         }
 
-        dialog.setContentView(sheetView)
-        dialog.show()
+        startActivity(detailIntent)
     }
 }

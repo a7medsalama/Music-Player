@@ -1,8 +1,8 @@
 package com.ahmed.salama.musicplayer.model
 
-import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.ColumnInfo
 
 data class AudioItem(
     val id: Long,
@@ -11,9 +11,9 @@ data class AudioItem(
     val album: String,
     val durationMs: Long,
     val uriString: String,
-    val artworkUriString: String? = null,      // used on API < 29
-    val artworkBitmap: Bitmap? = null,          // used on API >= 29
-    val isFavorite: Boolean = false
+    val artworkUriString: String? = null,
+    @ColumnInfo(defaultValue = "0")
+    val isFavourite: Boolean = false
 ) : Parcelable {
 
     val displayTitle: String
@@ -34,7 +34,6 @@ data class AudioItem(
         parcel.readLong(),
         parcel.readString().orEmpty(),
         parcel.readString(),
-        parcel.readParcelable(Bitmap::class.java.classLoader), // artworkBitmap
         parcel.readByte() != 0.toByte()
     )
 
@@ -46,8 +45,7 @@ data class AudioItem(
         parcel.writeLong(durationMs)
         parcel.writeString(uriString)
         parcel.writeString(artworkUriString)
-        parcel.writeParcelable(artworkBitmap, flags)
-        parcel.writeByte(if (isFavorite) 1 else 0)
+        parcel.writeByte(if (isFavourite) 1 else 0)
     }
 
     override fun describeContents(): Int = 0

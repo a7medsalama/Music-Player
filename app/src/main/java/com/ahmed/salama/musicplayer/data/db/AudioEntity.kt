@@ -4,13 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.ahmed.salama.musicplayer.model.AudioItem
 
-/**
- * Entity representing an audio item persisted in the Room database.
- * The table name matches the underlying audio cache table. Each row
- * corresponds to a single audio file on the device. The companion
- * functions allow conversions between the in-memory [AudioItem] model
- * and the persisted [AudioEntity].
- */
 @Entity(tableName = "audio_items")
 data class AudioEntity(
     @PrimaryKey val id: Long,
@@ -19,11 +12,9 @@ data class AudioEntity(
     val album: String,
     val durationMs: Long,
     val uriString: String,
-    val artworkUriString: String?
+    val artworkUriString: String?,
+    val isFavourite: Boolean = false
 ) {
-    /**
-     * Convert this persisted entity back into an in-memory [AudioItem].
-     */
     fun toAudioItem(): AudioItem = AudioItem(
         id = id,
         title = title,
@@ -31,14 +22,12 @@ data class AudioEntity(
         album = album,
         durationMs = durationMs,
         uriString = uriString,
-        artworkUriString = artworkUriString
+        artworkUriString = artworkUriString,
+        isFavourite = isFavourite
     )
 
     companion object {
-        /**
-         * Convert an [AudioItem] into its persisted [AudioEntity] form. This is used
-         * when caching content provider results into the database.
-         */
+
         fun fromAudioItem(item: AudioItem): AudioEntity = AudioEntity(
             id = item.id,
             title = item.title,
@@ -46,7 +35,8 @@ data class AudioEntity(
             album = item.album,
             durationMs = item.durationMs,
             uriString = item.uriString,
-            artworkUriString = item.artworkUriString
+            artworkUriString = item.artworkUriString,
+            isFavourite = item.isFavourite
         )
     }
 }

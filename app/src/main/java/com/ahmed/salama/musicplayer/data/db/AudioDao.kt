@@ -33,4 +33,17 @@ interface AudioDao {
      */
     @Query("DELETE FROM audio_items")
     fun clear()
+
+    @Query("UPDATE audio_items SET isFavourite = :isFavourite WHERE id = :audioId")
+    fun updateFavourite(audioId: Long, isFavourite: Boolean)
+
+    @Query("SELECT * FROM audio_items WHERE isFavourite = 1 ORDER BY title COLLATE NOCASE ASC")
+    fun getFavourites(): List<AudioEntity>
+
+    @Query("SELECT id FROM audio_items WHERE isFavourite = 1")
+    fun getFavouriteIds(): List<Long>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM audio_items WHERE id = :audioId AND isFavourite = 1)")
+    fun isFavourite(audioId: Long): Boolean
+
 }

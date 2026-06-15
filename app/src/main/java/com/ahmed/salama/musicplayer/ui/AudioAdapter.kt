@@ -103,6 +103,11 @@ class AudioAdapter(
         }
     }
 
+    fun indexOfAudioId(audioId: Long): Int {
+        return items.indexOfFirst { it.id == audioId }.takeIf { it >= 0 }
+            ?: RecyclerView.NO_POSITION
+    }
+
     companion object {
         fun formatDuration(durationMs: Long): String {
             val totalSeconds = maxOf(0, durationMs / 1000)

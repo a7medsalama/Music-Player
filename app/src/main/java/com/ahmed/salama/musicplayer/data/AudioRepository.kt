@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import android.util.Size
 import androidx.annotation.RequiresApi
 import com.ahmed.salama.musicplayer.data.db.AudioDatabase
+import com.ahmed.salama.musicplayer.data.db.AudioEntity
 import com.ahmed.salama.musicplayer.model.AudioItem
 
 class AudioRepository {
@@ -86,7 +87,7 @@ class AudioRepository {
                         durationMs = duration,
                         uriString = contentUri.toString(),
                         artworkUriString = artworkUriString,
-                        isFavorite = false
+                        isFavourite = false
                     )
                 )
             }
@@ -94,11 +95,20 @@ class AudioRepository {
 
         // Persist the scanned results to the cache. Clear any stale entries first.
         if (audioItems.isNotEmpty()) {
+            val favouriteIds = dao.getFavouriteIds().toSet()
             dao.clear()
-            val entities = audioItems.map {
-                com.ahmed.salama.musicplayer.data.db.AudioEntity.fromAudioItem(it)
+
+            val entities = audioItems.map { item ->
+                AudioEntity.fromAudioItem(
+                    item.copy(
+                        isFavourite = favouriteIds.contains(item.id)
+                    )
+                )
             }
+
             dao.insertAll(entities)
+
+            return entities.map { it.toAudioItem() }
         }
 
         return audioItems
@@ -115,5 +125,20 @@ class AudioRepository {
         } catch (e: Exception) {
             null
         }
+    }
+
+    fun isFavourite(context: Context, audioId: Long): Boolean {
+        val dao = AudioDatabase.getInstance(context).audioDao()
+        return dao.isFavourite(audioId)
+    }
+
+    fun setFavourite(context: Context, audioId: Long, isFavourite: Boolean) {
+        val dao = AudioDatabase.getInstance(context).audioDao()
+        dao.updateFavourite(audioId, isFavourite)
+    }
+
+    fun loadFavourites(context: Context): List<AudioItem> {
+        val dao = AudioDatabase.getInstance(context).audioDao()
+        return dao.getFavourites().map { it.toAudioItem() }
     }
 }
