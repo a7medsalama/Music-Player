@@ -4,4 +4,7 @@
     <string name="grant_audio_permission">Grant audio permission</string>
     <string name="explore_music">Explore Music</string>
     <string name="img">img</string>
+    <string name="favourite_songs">Favourite Songs</string>
+    <string name="fav">Fav</string>
+    <string name="no_favourite_songs_yet">No favourite songs yet</string>
 </resources>

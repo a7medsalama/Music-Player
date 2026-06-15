@@ -111,6 +111,10 @@ class FavouriteActivity : AppCompatActivity() {
         viewModel.nowPlayingTitle.observe(this) { title ->
             binding.textNowPlaying.text = title ?: "Nothing playing"
         }
+
+        viewModel.nowPlayingArtist.observe(this) { artist ->
+            binding.textPlaybackState.text = artist
+        }
     }
 
     private fun setupRecycler() {
@@ -134,7 +138,7 @@ class FavouriteActivity : AppCompatActivity() {
 
     private fun loadFavouriteSongs() {
         binding.progressLoading.visibility = View.VISIBLE
-        binding.textEmpty.visibility = View.GONE
+        binding.emptyLayout.visibility = View.GONE
 
         Thread {
             val items = AudioRepository().loadFavourites(applicationContext)
@@ -143,8 +147,8 @@ class FavouriteActivity : AppCompatActivity() {
                 binding.progressLoading.visibility = View.GONE
                 adapter.submitList(items)
 
-                binding.textSubtitle.text = "${items.size} favourite song(s)"
-                binding.textEmpty.visibility = if (items.isEmpty()) {
+                binding.textSubtitle.text = "${items.size} favourite songs"
+                binding.emptyLayout.visibility = if (items.isEmpty()) {
                     View.VISIBLE
                 } else {
                     View.GONE

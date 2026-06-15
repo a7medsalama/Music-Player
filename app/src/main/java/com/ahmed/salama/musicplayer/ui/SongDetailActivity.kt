@@ -381,22 +381,11 @@ class SongDetailActivity : AppCompatActivity() {
     private fun updatePlayButton() {
         binding.btnPlay.setImageResource(
             if (isCurrentSongPlaying) {
-                R.drawable.ic_pause
+                R.drawable.ic_circle_pause
             } else {
                 R.drawable.ic_play_2
             }
         )
-
-        if (isCurrentSongPlaying) {
-            if (binding.ivSong.animation == null) {
-                binding.ivSong.animation =
-                    AnimationUtils.loadAnimation(this, R.anim.rotate)
-            }
-
-            binding.ivSong.animation?.start()
-        } else {
-            binding.ivSong.clearAnimation()
-        }
     }
 
     private fun updateRepeatButton() {

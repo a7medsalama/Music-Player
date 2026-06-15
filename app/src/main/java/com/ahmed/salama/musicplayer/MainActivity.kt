@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.ivFav.setOnClickListener {
+        binding.favLayout.setOnClickListener {
             val favIntent = Intent(this, FavouriteActivity::class.java)
             startActivity(favIntent)
         }
@@ -81,6 +81,10 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.nowPlayingTitle.observe(this) { title ->
             binding.textNowPlaying.text = title
+        }
+
+        viewModel.nowPlayingArtist.observe(this) { artist ->
+            binding.textPlaybackState.text = artist
         }
 
         viewModel.currentIndex.observe(this) { index ->
@@ -152,14 +156,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPermissionState() {
         binding.progressLoading.visibility = View.GONE
-        binding.textEmpty.visibility = View.VISIBLE
+        binding.emptyLayout.visibility = View.VISIBLE
         binding.buttonGrantPermission.visibility = View.VISIBLE
         binding.textSubtitle.text = "Permission required to scan audio files"
     }
 
     private fun loadAudioLibrary() {
         binding.buttonGrantPermission.visibility = View.GONE
-        binding.textEmpty.visibility = View.GONE
+        binding.emptyLayout.visibility = View.GONE
         binding.progressLoading.visibility = View.VISIBLE
         binding.textSubtitle.text = "Scanning audio files from MediaStore..."
 
@@ -169,8 +173,8 @@ class MainActivity : AppCompatActivity() {
                 binding.progressLoading.visibility = View.GONE
                 adapter.submitList(items)
                 AudioLibraryCache.setPlaylist(items)
-                binding.textSubtitle.text = "${items.size} audio file(s) found on this device"
-                binding.textEmpty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+                binding.textSubtitle.text = "${items.size} songs found"
+                binding.emptyLayout.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
             }
         }.start()
     }
